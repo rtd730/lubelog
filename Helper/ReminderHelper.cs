@@ -97,6 +97,33 @@ namespace CarCareTracker.Helper
                     IsRecurring = reminder.IsRecurring,
                     Tags = reminder.Tags
                 };
+
+                // Calculate interval mileage
+                if (reminder.ReminderMileageInterval != ReminderMileageInterval.Other)
+                {
+                    reminderViewModel.IntervalMileage = (int)reminder.ReminderMileageInterval;
+                }
+                else
+                {
+                    reminderViewModel.IntervalMileage = reminder.CustomMileageInterval;
+                }
+
+                // Calculate interval months (convert days to months if needed)
+                if (reminder.ReminderMonthInterval != ReminderMonthInterval.Other)
+                {
+                    reminderViewModel.IntervalMonths = (int)reminder.ReminderMonthInterval;
+                }
+                else
+                {
+                    if (reminder.CustomMonthIntervalUnit == ReminderIntervalUnit.Months)
+                    {
+                        reminderViewModel.IntervalMonths = reminder.CustomMonthInterval;
+                    }
+                    else if (reminder.CustomMonthIntervalUnit == ReminderIntervalUnit.Days)
+                    {
+                        reminderViewModel.IntervalMonths = reminder.CustomMonthInterval / 30;
+                    }
+                }
                 if (reminder.Metric == ReminderMetric.Both)
                 {
                     if (reminder.Date < dateCompare)

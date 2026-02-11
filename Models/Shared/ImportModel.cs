@@ -216,6 +216,10 @@ namespace CarCareTracker.Models
         public string DueDays { get; set; } = string.Empty;
         [JsonConverter(typeof(FromIntOptional))]
         public string DueDistance { get; set; } = string.Empty;
+        [JsonConverter(typeof(FromIntOptional))]
+        public string IntervalMileage { get; set; } = string.Empty;
+        [JsonConverter(typeof(FromIntOptional))]
+        public string IntervalMonths { get; set; } = string.Empty;
         public string Tags { get; set; } = string.Empty;
     }
     public class PlanRecordExportModel 

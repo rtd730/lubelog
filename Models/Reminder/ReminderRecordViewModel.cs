@@ -22,6 +22,8 @@
         /// <summary>
         /// Recurring Reminders
         /// </summary>
+        public int IntervalMileage { get; set; }
+        public int IntervalMonths { get; set; }
         public bool IsRecurring { get; set; } = false;
         public List<string> Tags { get; set; } = new List<string>();
     }
