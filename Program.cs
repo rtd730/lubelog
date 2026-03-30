@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.FileProviders;
 using System.Globalization;
+using CarCareTracker.Models.LoggerSync;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -88,6 +90,10 @@ else
     builder.Services.AddSingleton<IEquipmentRecordDataAccess, EquipmentRecordDataAccess>();
     builder.Services.AddSingleton<IUserHouseholdDataAccess, UserHouseholdDataAccess>();
     builder.Services.AddSingleton<IApiKeyRecordDataAccess, ApiKeyRecordDataAccess>();
+    builder.Services.AddSingleton<ITelemetryDataAccess, TelemetryDataAccess>();
+    builder.Services.AddSingleton<IFirmwareDataAccess, FirmwareDataAccess>();
+    builder.Services.AddSingleton<IReceivedFileDataAccess, ReceivedFileDataAccess>();
+
 }
 
 //configure helpers

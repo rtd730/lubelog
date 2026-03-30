@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Text.Json;
+using CarCareTracker.Models.LoggerSync;
+
 
 namespace CarCareTracker.Controllers
 {
@@ -42,6 +44,9 @@ namespace CarCareTracker.Controllers
         private readonly IConfigHelper _config;
         private readonly IWebHostEnvironment _webEnv;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ITelemetryDataAccess _telemetryDataAccess;
+        private readonly IFirmwareDataAccess _firmwareDataAccess;
+        private readonly IReceivedFileDataAccess _receivedFileDataAccess;
         public APIController(IVehicleDataAccess dataAccess,
             IGasHelper gasHelper,
             IEquipmentHelper equipmentHelper,
@@ -70,7 +75,11 @@ namespace CarCareTracker.Controllers
             IVehicleLogic vehicleLogic,
             IOdometerLogic odometerLogic,
             IWebHostEnvironment webEnv,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            ITelemetryDataAccess telemetryDataAccess, 
+            IFirmwareDataAccess firmwareDataAccess,
+            IReceivedFileDataAccess receivedFileDataAccess)
+
         {
             _dataAccess = dataAccess;
             _noteDataAccess = noteDataAccess;
@@ -101,6 +110,10 @@ namespace CarCareTracker.Controllers
             _config = config;
             _webEnv = webEnv;
             _httpClientFactory = httpClientFactory;
+            _telemetryDataAccess = telemetryDataAccess;
+            _firmwareDataAccess = firmwareDataAccess;
+            _receivedFileDataAccess = receivedFileDataAccess;
+
         }
         public IActionResult Index()
         {
