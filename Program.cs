@@ -125,6 +125,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
     options.Limits.MaxRequestBodySize = int.MaxValue; // if don't set default value is: 30 MB
+    options.Limits.MinRequestBodyDataRate = null;
 });
 builder.Services.Configure<FormOptions>(options =>
 {
