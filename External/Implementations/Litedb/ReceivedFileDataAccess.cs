@@ -33,5 +33,15 @@ namespace CarCareTracker.External.Implementations
             db.Checkpoint();
             return true;
         }
+        public List<ReceivedFileRecord> GetRecentFiles(int vehicleId, int limit = 50)
+        {
+            var db = _liteDB.GetLiteDB();
+            var table = db.GetCollection<ReceivedFileRecord>(tableName);
+            return table.Find(Query.EQ(nameof(ReceivedFileRecord.VehicleId), vehicleId))
+                        .OrderByDescending(r => r.ReceivedAt)
+                        .Take(limit)
+                        .ToList();
+        }
+
     }
 }

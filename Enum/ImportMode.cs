@@ -15,6 +15,10 @@
         OdometerRecord = 10,
         VehicleRecord = 11,
         InspectionRecord = 12,
-        EquipmentRecord = 13
+        EquipmentRecord = 13,
+        DriveRecord = 14,
+        TelemetryTimeline = 15,
+        TelemetryGraph = 16,
+        TrackerManagement = 17
     }
 }

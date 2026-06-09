@@ -55,7 +55,12 @@
             ImportMode.NoteRecord,
             ImportMode.InspectionRecord,
             ImportMode.EquipmentRecord,
-            ImportMode.ReminderRecord
+            ImportMode.ReminderRecord,
+            ImportMode.DriveRecord,
+            ImportMode.TelemetryTimeline,
+            ImportMode.TelemetryGraph,
+            ImportMode.TrackerManagement
+
         };
     }
 }

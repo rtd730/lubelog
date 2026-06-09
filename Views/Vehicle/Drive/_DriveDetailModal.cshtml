@@ -1,0 +1,102 @@
+@model DriveRecord
+<div class="modal-header">
+    <h5 class="modal-title">Drive Details — @Model.StartTime.ToShortDateString()</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body" data-vehicle-id="@Model.VehicleId" data-source-filename="@Model.SourceFilename">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-clock me-2"></i>Time</div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Start:</strong> @Model.StartTime.ToString("g")</p>
+                    <p class="mb-1"><strong>End:</strong> @Model.EndTime.ToString("g")</p>
+                    <p class="mb-0"><strong>Duration:</strong> @{
+                        var dur = Model.EndTime - Model.StartTime;
+                        @(dur.TotalHours >= 1 ? $"{(int)dur.TotalHours}h {dur.Minutes:D2}m" : $"{dur.Minutes}m {dur.Seconds:D2}s")
+                    }</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-speedometer me-2"></i>Performance</div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Distance:</strong> @Model.DistanceMiles.ToString("F1") mi</p>
+                    <p class="mb-1"><strong>Avg Speed:</strong> @Model.AvgSpeedMph.ToString("F1") mph</p>
+                    <p class="mb-1"><strong>Max Speed:</strong> @Model.MaxSpeedMph.ToString("F1") mph</p>
+                    <p class="mb-1"><strong>Avg RPM:</strong> @Model.AvgRpm.ToString("F0")</p>
+                    <p class="mb-1"><strong>Max RPM:</strong> @Model.MaxRpm.ToString("F0")</p>
+                    <p class="mb-0"><strong>Fuel Used:</strong> @(Model.FuelConsumedGallons.HasValue ? $"{Model.FuelConsumedGallons.Value:F3} gal" : "—")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-thermometer-half me-2"></i>Temperatures</div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Coolant:</strong> @(Model.AvgCoolantTemp.HasValue ? $"{Model.AvgCoolantTemp.Value:F1}°" : "—")</p>
+                    <p class="mb-1"><strong>Transmission:</strong> @(Model.AvgTransTemp.HasValue ? $"{Model.AvgTransTemp.Value:F1}°" : "—")</p>
+                    <p class="mb-1"><strong>Outside:</strong> @(Model.AvgOat.HasValue ? $"{Model.AvgOat.Value:F1}°" : "—")</p>
+                    <p class="mb-0"><strong>Cabin:</strong> @(Model.AvgCabinTemp.HasValue ? $"{Model.AvgCabinTemp.Value:F1}°" : "—")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-geo-alt me-2"></i>Location</div>
+                <div class="card-body">
+                    @if (Model.StartLat != 0)
+                    {
+                        <p class="mb-1"><strong>Start:</strong> <a href="https://maps.google.com/?q=@Model.StartLat,@Model.StartLng" target="_blank">@Model.StartLat.ToString("F4"), @Model.StartLng.ToString("F4")</a></p>
+                    }
+                    else
+                    {
+                        <p class="mb-1"><strong>Start:</strong> —</p>
+                    }
+                    @if (Model.EndLat != 0)
+                    {
+                        <p class="mb-0"><strong>End:</strong> <a href="https://maps.google.com/?q=@Model.EndLat,@Model.EndLng" target="_blank">@Model.EndLat.ToString("F4"), @Model.EndLng.ToString("F4")</a></p>
+                    }
+                    else
+                    {
+                        <p class="mb-0"><strong>End:</strong> —</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-map me-2"></i>Route</div>
+                <div class="card-body p-0">
+                    <div id="driveDetailMap" style="height:300px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-pencil me-2"></i>Notes</div>
+                <div class="card-body">
+                    <textarea id="driveNotes" class="form-control" rows="3">@Model.Notes</textarea>
+                    <button onclick="saveDriveNotes(@Model.Id)" class="btn btn-sm btn-primary mt-2">Save Notes</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-arrow-right-circle me-2"></i>Reassign Drive</div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="small text-muted mb-0">Move to Vehicle ID:</label>
+                        <input type="number" id="reassignVehicleId" class="form-control form-control-sm" style="width:80px;" min="1" />
+                        <button onclick="reassignDrive(@Model.Id)" class="btn btn-sm btn-warning">Reassign</button>
+                    </div>
+                    <small class="text-muted">Currently on Vehicle @Model.VehicleId — this permanently moves the drive and its telemetry data.</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <small class="text-muted">Source: @Model.SourceFilename | Points: @Model.PointCount</small>
+        </div>
+    </div>
+</div>

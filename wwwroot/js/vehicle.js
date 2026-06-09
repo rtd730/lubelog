@@ -39,9 +39,19 @@
             case "inspection-tab":
                 getVehicleInspectionRecords(vehicleId);
                 break;
-            case "equipment-tab":
-                getVehicleEquipmentRecords(vehicleId);
+            case "drive-tab":
+                getVehicleDriveRecords(vehicleId);
                 break;
+            case "timeline-tab":
+                getVehicleTimeline(vehicleId);
+                break;
+            case "graphmap-tab":
+                getVehicleGraphMap(vehicleId);
+                break;
+            case "tracker-tab":
+                getVehicleTrackerManagement(vehicleId);
+                break;
+
         }
         $(`.lubelogger-tab #${e.target.id}`).addClass('active');
         $(`.lubelogger-mobile-nav #${e.target.id}`).addClass('active');
@@ -83,9 +93,19 @@
                 case "inspection-tab":
                     $("#inspection-tab-pane").html("");
                     break;
-                case "equipment-tab":
-                    $("#equipment-tab-pane").html("");
+                case "drive-tab":
+                    $("#drive-tab-pane").html("");
                     break;
+                case "timeline-tab":
+                    $("#timeline-tab-pane").html("");
+                    break;
+                case "graphmap-tab":
+                    $("#graphmap-tab-pane").html("");
+                    break;
+                case "tracker-tab":
+                    $("#tracker-tab-pane").html("");
+                    break;
+
             }
             $(`.lubelogger-tab #${e.relatedTarget.id}`).removeClass('active');
             $(`.lubelogger-mobile-nav #${e.relatedTarget.id}`).removeClass('active');
@@ -193,13 +213,30 @@ function getVehicleInspectionRecords(vehicleId) {
         }
     });
 }
-function getVehicleEquipmentRecords(vehicleId) {
-    $.get(`/Vehicle/GetEquipmentRecordsByVehicleId?vehicleId=${vehicleId}`, function (data) {
+function getVehicleDriveRecords(vehicleId) {
+    $.get(`/Vehicle/GetDriveRecordsByVehicleId?vehicleId=${vehicleId}`, function (data) {
         if (data) {
-            $("#equipment-tab-pane").html(data);
+            $("#drive-tab-pane").html(data);
+            // Default sort by date descending
+            var dateHeader = $('#drive-tab-pane th[data-sort-key="drivedate"]')[0];
+            if (dateHeader) { sortDriveTable(dateHeader); sortDriveTable(dateHeader); }
             restoreScrollPosition();
-            getVehicleHaveImportantReminders(vehicleId);
         }
+    });
+}
+function getVehicleTimeline(vehicleId) {
+    $.get('/Vehicle/GetTimelineView?vehicleId=' + vehicleId, function (data) {
+        if (data) { $("#timeline-tab-pane").html(data); initTimeline(vehicleId); }
+    });
+}
+function getVehicleGraphMap(vehicleId) {
+    $.get('/Vehicle/GetChartsView?vehicleId=' + vehicleId, function (data) {
+        if (data) { $("#graphmap-tab-pane").html(data); initCharts(vehicleId); }
+    });
+}
+function getVehicleTrackerManagement(vehicleId) {
+    $.get('/Vehicle/GetTrackerManagement?vehicleId=' + vehicleId, function (data) {
+        if (data) { $("#tracker-tab-pane").html(data); }
     });
 }
 function getVehicleReport(vehicleId) {
@@ -872,6 +909,19 @@ function getDefaultTabName() {
         case "EquipmentRecord":
             return 'equipment';
             break;
+        case "DriveRecord":
+            return 'drive';
+            break;
+        case "TelemetryTimeline":
+            return 'timeline';
+            break;
+        case "TelemetryGraph":
+            return 'graphmap';
+            break;
+        case "TrackerManagement":
+            return 'tracker';
+            break;
+
     }
 }
 function setLastOdometer(mileageInputId) {

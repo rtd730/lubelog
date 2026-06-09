@@ -47,6 +47,10 @@ namespace CarCareTracker.Controllers
         private readonly ITelemetryDataAccess _telemetryDataAccess;
         private readonly IFirmwareDataAccess _firmwareDataAccess;
         private readonly IReceivedFileDataAccess _receivedFileDataAccess;
+        private readonly IDriveRecordDataAccess _driveRecordDataAccess;
+        private readonly ITelemetryParserService _telemetryParserService;
+        private readonly ITelemetryLatestCacheService _latestCache;
+
         public APIController(IVehicleDataAccess dataAccess,
             IGasHelper gasHelper,
             IEquipmentHelper equipmentHelper,
@@ -78,7 +82,10 @@ namespace CarCareTracker.Controllers
             IHttpClientFactory httpClientFactory,
             ITelemetryDataAccess telemetryDataAccess, 
             IFirmwareDataAccess firmwareDataAccess,
-            IReceivedFileDataAccess receivedFileDataAccess)
+            IReceivedFileDataAccess receivedFileDataAccess,
+            ITelemetryParserService telemetryParserService,
+            IDriveRecordDataAccess driveRecordDataAccess,
+            ITelemetryLatestCacheService latestCache)
 
         {
             _dataAccess = dataAccess;
@@ -113,6 +120,10 @@ namespace CarCareTracker.Controllers
             _telemetryDataAccess = telemetryDataAccess;
             _firmwareDataAccess = firmwareDataAccess;
             _receivedFileDataAccess = receivedFileDataAccess;
+            _driveRecordDataAccess = driveRecordDataAccess;
+            _telemetryParserService = telemetryParserService;
+            _latestCache = latestCache;
+
 
         }
         public IActionResult Index()

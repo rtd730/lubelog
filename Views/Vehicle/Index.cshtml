@@ -24,6 +24,12 @@
     <script src="~/js/odometerrecord.js?v=@StaticHelper.VersionNumber"></script>
     <script src="~/js/inspectionrecord.js?v=@StaticHelper.VersionNumber"></script>
     <script src="~/js/equipmentrecord.js?v=@StaticHelper.VersionNumber"></script>
+    <script src="~/js/drives.js?v=@StaticHelper.VersionNumber"></script>
+    <script src="~/js/timeline.js?v=@StaticHelper.VersionNumber"></script>
+    <script src="~/js/graphmap.js?v=@StaticHelper.VersionNumber"></script>
+    <script src="~/js/tracker.js?v=@StaticHelper.VersionNumber"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="~/lib/chart-js/chart.umd.js"></script>
     <script src="~/lib/drawdown/drawdown.js"></script>
 }
@@ -78,6 +84,19 @@
                     <li class="nav-item" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x=>x == ImportMode.ReminderRecord)">
                         <button class="nav-link resizable-nav-link @StaticHelper.DefaultActiveTab(userConfig, ImportMode.ReminderRecord)" id="reminder-tab" data-bs-toggle="tab" data-bs-target="#reminder-tab-pane" type="button" role="tab" aria-selected="false"><div class="reminderBellDiv" style="display:inline-flex;"><i class="reminderBell bi bi-bell"></i></div><span class="ms-2">@translator.Translate(userLanguage, "Reminders")</span></button>
                     </li>
+                    <li class="nav-item" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.DriveRecord)">
+                        <button class="nav-link resizable-nav-link @StaticHelper.DefaultActiveTab(userConfig, ImportMode.DriveRecord)" id="drive-tab" data-bs-toggle="tab" data-bs-target="#drive-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-car-front"></i><span class="ms-2">@translator.Translate(userLanguage, "Drives")</span></button>
+                    </li>
+                    <li class="nav-item" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.TelemetryTimeline)">
+                        <button class="nav-link resizable-nav-link @StaticHelper.DefaultActiveTab(userConfig, ImportMode.TelemetryTimeline)" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-graph-up"></i><span class="ms-2">@translator.Translate(userLanguage, "Timeline")</span></button>
+                    </li>
+                    <li class="nav-item" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.TelemetryGraph)">
+                        <button class="nav-link resizable-nav-link @StaticHelper.DefaultActiveTab(userConfig, ImportMode.TelemetryGraph)" id="graphmap-tab" data-bs-toggle="tab" data-bs-target="#graphmap-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-map"></i><span class="ms-2">@translator.Translate(userLanguage, "Charts")</span></button>
+                    </li>
+                    <li class="nav-item" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.TrackerManagement)">
+                        <button class="nav-link resizable-nav-link @StaticHelper.DefaultActiveTab(userConfig, ImportMode.TrackerManagement)" id="tracker-tab" data-bs-toggle="tab" data-bs-target="#tracker-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-cpu"></i><span class="ms-2">@translator.Translate(userLanguage, "Tracker Management")</span></button>
+                    </li>
+
                     <li class="nav-item" role="presentation" style="order: @(userConfig.TabOrder.Count + 1)">
                         <button class="nav-link resizable-nav-link" type="button" role="tab" aria-selected="false" id="search-tab" onclick="showGlobalSearch()"><i class="bi bi-search"></i><span class="ms-2 ">@translator.Translate(userLanguage, "Search")</span></button>
                     </li>
@@ -120,6 +139,19 @@
                             <li class="nav-item text-truncate" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.EquipmentRecord)">
                                 <button class="nav-link resizable-nav-link @StaticHelper.DefaultActiveTab(userConfig, ImportMode.EquipmentRecord)" id="equipment-tab" data-bs-toggle="tab" data-bs-target="#equipment-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-disc"></i><span class="ms-2">@translator.Translate(userLanguage, "Equipment")</span></button>
                             </li>
+                            <li class="nav-item text-truncate" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.DriveRecord)">
+                                <button class="nav-link resizable-nav-link @StaticHelper.DefaultActiveTab(userConfig, ImportMode.DriveRecord)" id="drive-tab" data-bs-toggle="tab" data-bs-target="#drive-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-car-front"></i><span class="ms-2">@translator.Translate(userLanguage, "Drives")</span></button>
+                            </li>
+                            <li class="nav-item text-truncate" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.TelemetryTimeline)">
+                                <button class="nav-link resizable-nav-link @StaticHelper.DefaultActiveTab(userConfig, ImportMode.TelemetryTimeline)" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-graph-up"></i><span class="ms-2">@translator.Translate(userLanguage, "Timeline")</span></button>
+                            </li>
+                            <li class="nav-item text-truncate" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.TelemetryGraph)">
+                                <button class="nav-link resizable-nav-link @StaticHelper.DefaultActiveTab(userConfig, ImportMode.TelemetryGraph)" id="graphmap-tab" data-bs-toggle="tab" data-bs-target="#graphmap-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-map"></i><span class="ms-2">@translator.Translate(userLanguage, "Charts")</span></button>
+                            </li>
+                            <li class="nav-item text-truncate" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.TrackerManagement)">
+                                <button class="nav-link resizable-nav-link @StaticHelper.DefaultActiveTab(userConfig, ImportMode.TrackerManagement)" id="tracker-tab" data-bs-toggle="tab" data-bs-target="#tracker-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-cpu"></i><span class="ms-2">@translator.Translate(userLanguage, "Tracker Management")</span></button>
+                            </li>
+
                             <li class="nav-item text-truncate" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.ReminderRecord)">
                                 <button class="nav-link resizable-nav-link @StaticHelper.DefaultActiveTab(userConfig, ImportMode.ReminderRecord)" id="reminder-tab" data-bs-toggle="tab" data-bs-target="#reminder-tab-pane" type="button" role="tab" aria-selected="false"><div class="reminderBellDiv" style="display:inline-flex;"><i class="reminderBell bi bi-bell"></i></div><span class="ms-2">@translator.Translate(userLanguage, "Reminders")</span></button>
                             </li>
@@ -186,6 +218,19 @@
         <li class="nav-item d-flex" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.EquipmentRecord)">
             <button class="nav-link flex-grow-1 text-start @StaticHelper.DefaultActiveTab(userConfig, ImportMode.EquipmentRecord)" id="equipment-tab" data-bs-toggle="tab" data-bs-target="#equipment-tab-pane" type="button" role="tab" aria-selected="false"><span class="display-3 ms-2"><i class="bi bi-disc me-2"></i>@translator.Translate(userLanguage, "Equipment")</span></button>
         </li>
+        <li class="nav-item d-flex" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.DriveRecord)">
+            <button class="nav-link flex-grow-1 text-start @StaticHelper.DefaultActiveTab(userConfig, ImportMode.DriveRecord)" id="drive-tab" data-bs-toggle="tab" data-bs-target="#drive-tab-pane" type="button" role="tab" aria-selected="false"><span class="display-3 ms-2"><i class="bi bi-car-front me-2"></i>@translator.Translate(userLanguage, "Drives")</span></button>
+        </li>
+        <li class="nav-item d-flex" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.TelemetryTimeline)">
+            <button class="nav-link flex-grow-1 text-start @StaticHelper.DefaultActiveTab(userConfig, ImportMode.TelemetryTimeline)" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline-tab-pane" type="button" role="tab" aria-selected="false"><span class="display-3 ms-2"><i class="bi bi-graph-up me-2"></i>@translator.Translate(userLanguage, "Timeline")</span></button>
+        </li>
+        <li class="nav-item d-flex" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.TelemetryGraph)">
+            <button class="nav-link flex-grow-1 text-start @StaticHelper.DefaultActiveTab(userConfig, ImportMode.TelemetryGraph)" id="graphmap-tab" data-bs-toggle="tab" data-bs-target="#graphmap-tab-pane" type="button" role="tab" aria-selected="false"><span class="display-3 ms-2"><i class="bi bi-map me-2"></i>@translator.Translate(userLanguage, "Charts")</span></button>
+        </li>
+        <li class="nav-item d-flex" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.TrackerManagement)">
+            <button class="nav-link flex-grow-1 text-start @StaticHelper.DefaultActiveTab(userConfig, ImportMode.TrackerManagement)" id="tracker-tab" data-bs-toggle="tab" data-bs-target="#tracker-tab-pane" type="button" role="tab" aria-selected="false"><span class="display-3 ms-2"><i class="bi bi-cpu me-2"></i>@translator.Translate(userLanguage, "Tracker Management")</span></button>
+        </li>
+
         <li class="nav-item d-flex" role="presentation" style="order: @userConfig.TabOrder.FindIndex(x => x == ImportMode.ReminderRecord)">
             <button class="nav-link flex-grow-1 text-start @StaticHelper.DefaultActiveTab(userConfig, ImportMode.ReminderRecord)" id="reminder-tab" data-bs-toggle="tab" data-bs-target="#reminder-tab-pane" type="button" role="tab" aria-selected="false"><span class="display-3 ms-2"><div class="reminderBellDiv" style="display:inline-flex;"><i class="reminderBell bi bi-bell me-2"></i></div>@translator.Translate(userLanguage, "Reminders")</span></button>
         </li>
@@ -206,6 +251,11 @@
         <div class="tab-pane fade" id="odometer-tab-pane" role="tabpanel" tabindex="0"></div>
         <div class="tab-pane fade" id="inspection-tab-pane" role="tabpanel" tabindex="0"></div>
         <div class="tab-pane fade" id="equipment-tab-pane" role="tabpanel" tabindex="0"></div>
+        <div class="tab-pane fade" id="drive-tab-pane" role="tabpanel" tabindex="0"></div>
+        <div class="tab-pane fade" id="timeline-tab-pane" role="tabpanel" tabindex="0"></div>
+        <div class="tab-pane fade" id="graphmap-tab-pane" role="tabpanel" tabindex="0"></div>
+        <div class="tab-pane fade" id="tracker-tab-pane" role="tabpanel" tabindex="0"></div>
+
     </div>
 </div>
 <div class="modal fade" data-bs-focus="false" id="editVehicleModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -261,6 +311,12 @@
                 </div>
                 <div id="globalSearchModalResults"></div>
             </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" data-bs-focus="false" id="driveDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="driveDetailModalContent">
         </div>
     </div>
 </div>

@@ -167,10 +167,6 @@
                         <input onChange="updateSettings()" class="form-check-input me-1" type="checkbox" value="EquipmentRecord" id="equipmentRecordTab" @(Model.UserConfig.VisibleTabs.Contains(ImportMode.EquipmentRecord) ? "checked" : "")>
                         <label class="form-check-label stretched-link" for="equipmentRecordTab">@translator.Translate(userLanguage, "Equipment")</label>
                     </li>
-                </ul>
-            </div>
-            <div class="col-12 col-md-6">
-                <ul class="list-group">
                     <li class="list-group-item">
                         <input onChange="updateSettings()" class="form-check-input me-1" type="checkbox" value="TaxRecord" id="taxRecordTab" @(Model.UserConfig.VisibleTabs.Contains(ImportMode.TaxRecord) ? "checked" : "")>
                         <label class="form-check-label stretched-link" for="taxRecordTab">@translator.Translate(userLanguage, "Taxes")</label>
@@ -179,6 +175,10 @@
                         <input onChange="updateSettings()" class="form-check-input me-1" type="checkbox" value="NoteRecord" id="noteRecordTab" @(Model.UserConfig.VisibleTabs.Contains(ImportMode.NoteRecord) ? "checked" : "")>
                         <label class="form-check-label stretched-link" for="noteRecordTab">@translator.Translate(userLanguage, "Notes")</label>
                     </li>
+                </ul>
+            </div>
+            <div class="col-12 col-md-6">
+                <ul class="list-group">
                     <li class="list-group-item">
                         <input onChange="updateSettings()" class="form-check-input me-1" type="checkbox" value="ReminderRecord" id="reminderRecordTab" @(Model.UserConfig.VisibleTabs.Contains(ImportMode.ReminderRecord) ? "checked" : "")>
                         <label class="form-check-label stretched-link" for="reminderRecordTab">@translator.Translate(userLanguage, "Reminder")</label>
@@ -195,6 +195,23 @@
                         <input onChange="updateSettings()" class="form-check-input me-1" type="checkbox" value="InspectionRecord" id="inspectionRecordTab" @(Model.UserConfig.VisibleTabs.Contains(ImportMode.InspectionRecord) ? "checked" : "")>
                         <label class="form-check-label stretched-link" for="inspectionRecordTab">@translator.Translate(userLanguage, "Inspections")</label>
                     </li>
+                    <li class="list-group-item">
+                        <input onChange="updateSettings()" class="form-check-input me-1" type="checkbox" value="DriveRecord" id="driveRecordTab" @(Model.UserConfig.VisibleTabs.Contains(ImportMode.DriveRecord) ? "checked" : "")>
+                        <label class="form-check-label stretched-link" for="driveRecordTab">@translator.Translate(userLanguage, "Drives")</label>
+                    </li>
+                    <li class="list-group-item">
+                        <input onChange="updateSettings()" class="form-check-input me-1" type="checkbox" value="TelemetryTimeline" id="telemetryTimelineTab" @(Model.UserConfig.VisibleTabs.Contains(ImportMode.TelemetryTimeline) ? "checked" : "")>
+                        <label class="form-check-label stretched-link" for="telemetryTimelineTab">@translator.Translate(userLanguage, "Timeline")</label>
+                    </li>
+                    <li class="list-group-item">
+                        <input onChange="updateSettings()" class="form-check-input me-1" type="checkbox" value="TelemetryGraph" id="telemetryGraphTab" @(Model.UserConfig.VisibleTabs.Contains(ImportMode.TelemetryGraph) ? "checked" : "")>
+                        <label class="form-check-label stretched-link" for="telemetryGraphTab">@translator.Translate(userLanguage, "Charts")</label>
+                    </li>
+                    <li class="list-group-item">
+                        <input onChange="updateSettings()" class="form-check-input me-1" type="checkbox" value="TrackerManagement" id="trackerManagementTab" @(Model.UserConfig.VisibleTabs.Contains(ImportMode.TrackerManagement) ? "checked" : "")>
+                        <label class="form-check-label stretched-link" for="trackerManagementTab">@translator.Translate(userLanguage, "Tracker Management")</label>
+                    </li>
+
                 </ul>
             </div>
         </div>
@@ -399,6 +416,11 @@
                             <li class="list-group-item" style="order: @Model.UserConfig.TabOrder.FindIndex(x => x == ImportMode.InspectionRecord)" draggable="true" data-tab="@ImportMode.InspectionRecord">@translator.Translate(userLanguage, "Inspections")</li>
                             <li class="list-group-item" style="order: @Model.UserConfig.TabOrder.FindIndex(x => x == ImportMode.EquipmentRecord)" draggable="true" data-tab="@ImportMode.EquipmentRecord">@translator.Translate(userLanguage, "Equipment")</li>
                             <li class="list-group-item" style="order: @Model.UserConfig.TabOrder.FindIndex(x=>x == ImportMode.ReminderRecord)" draggable="true" data-tab="@ImportMode.ReminderRecord">@translator.Translate(userLanguage, "Reminder")</li>
+                            <li class="list-group-item" style="order: @Model.UserConfig.TabOrder.FindIndex(x=>x == ImportMode.DriveRecord)" draggable="true" data-tab="@ImportMode.DriveRecord">@translator.Translate(userLanguage, "Drives")</li>
+                            <li class="list-group-item" style="order: @Model.UserConfig.TabOrder.FindIndex(x=>x == ImportMode.TelemetryTimeline)" draggable="true" data-tab="@ImportMode.TelemetryTimeline">@translator.Translate(userLanguage, "Timeline")</li>
+                            <li class="list-group-item" style="order: @Model.UserConfig.TabOrder.FindIndex(x=>x == ImportMode.TelemetryGraph)" draggable="true" data-tab="@ImportMode.TelemetryGraph">@translator.Translate(userLanguage, "Charts")</li>
+                            <li class="list-group-item" style="order: @Model.UserConfig.TabOrder.FindIndex(x=>x == ImportMode.TrackerManagement)" draggable="true" data-tab="@ImportMode.TrackerManagement">@translator.Translate(userLanguage, "Tracker Management")</li>
+
                         </ul>
                     </div>
                 </div>

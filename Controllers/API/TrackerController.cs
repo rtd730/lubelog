@@ -20,6 +20,28 @@ namespace CarCareTracker.Controllers
             }
             var received = _receivedFileDataAccess.GetReceivedFilenames(request.VehicleId);
             var needed = request.Files.Where(f => !received.Contains(f)).ToList();
+            // Store SD card info if reported
+            if (request.SdTotalMb.HasValue || request.SdFreeMb.HasValue || !string.IsNullOrEmpty(request.FirmwareVersion))
+            {
+                var sdRecord = new TelemetryRecord
+                {
+                    VehicleId = request.VehicleId,
+                    UnixTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                    Datetime = DateTime.UtcNow.ToString("o"),
+                    FileType = "STATUS",
+                    SourceFilename = "sync_check",
+                    Fields = new Dictionary<string, string>()
+                };
+                if (request.SdTotalMb.HasValue)
+                    sdRecord.Fields["sd_total_mb"] = request.SdTotalMb.Value.ToString();
+                if (request.SdFreeMb.HasValue)
+                    sdRecord.Fields["sd_free_mb"] = request.SdFreeMb.Value.ToString();
+                if (!string.IsNullOrEmpty(request.FirmwareVersion))
+                    sdRecord.Fields["firmware_version"] = request.FirmwareVersion;
+                _telemetryDataAccess.SaveTelemetryBatch(new List<TelemetryRecord> { sdRecord });
+                _latestCache.Update(sdRecord);
+
+            }
             return Json(new { needed });
         }
 
@@ -40,10 +62,35 @@ namespace CarCareTracker.Controllers
                 var safeName = filename.Replace("..", "").TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
                 var filePath = Path.Combine(directory, safeName);
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-                using var fileStream = new FileStream(filePath, FileMode.Create);
-                await Request.Body.CopyToAsync(fileStream);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await Request.Body.CopyToAsync(fileStream);
+                }
                 _receivedFileDataAccess.MarkFileReceived(vehicleId, filename);
+                
+                // Determine file type from path (e.g., "LOG/2026/file.CSV" → "LOG")
+                var fileType = safeName.Split(Path.DirectorySeparatorChar, '/')[0];
+                
+                // IMU files are archived to disk above but NOT parsed into rows — raw
+                // high-frequency signal kept for on-demand FFT. Matches the manual upload.
+                if (!fileType.Equals("IMU", StringComparison.OrdinalIgnoreCase))
+                {
+                    _telemetryParserService.ParseAndStoreCsvFile(vehicleId, filePath, fileType);
+                }
+
+                // Auto-detect drives from newly uploaded LOG files
+                if (fileType.Equals("LOG", StringComparison.OrdinalIgnoreCase))
+                {
+                    var latestDriveTime = _driveRecordDataAccess.GetLatestDriveUnixTimeByVehicleId(vehicleId);
+                    var newDrives = _telemetryParserService.DetectDrives(vehicleId, latestDriveTime);
+                    if (newDrives.Any())
+                    {
+                        _driveRecordDataAccess.SaveDriveRecordBatch(newDrives);
+                    }
+                }
+                
                 return Json(OperationResponse.Succeed("File Saved"));
+
             }
             catch (Exception ex)
             {

@@ -1,0 +1,151 @@
+@model DriveRecordViewModelContainer
+<div class="d-flex flex-column vehicleTabPane">
+<div class="row">
+    <div class="d-flex justify-content-between">
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <span class="badge bg-success">Drives: @Model.DriveRecords.Count</span>
+            @if (Model.DriveRecords.Any())
+            {
+                <span class="badge bg-primary">Total Distance: @Model.DriveRecords.Sum(x => x.DistanceMiles).ToString("F1") mi</span>
+                <span class="badge bg-primary">Avg Speed: @Model.DriveRecords.Average(x => x.AvgSpeedMph).ToString("F1") mph</span>
+                
+                var mpgDrives = Model.DriveRecords.Where(x => x.AvgMpgRaw.HasValue);
+                if (mpgDrives.Any())
+                {
+                    var overallMpg = mpgDrives.Sum(x => x.DistanceMiles) / mpgDrives.Sum(x => x.FuelConsumedGallons!.Value);
+                    <span class="badge bg-info">Avg MPG: @overallMpg.ToString("F1")</span>
+                }
+                
+            }
+            <span class="badge bg-secondary">Last parsed: @Model.LastParsedAt</span>
+        </div>
+        <div class="lubelogger-record-add">
+            <div class="btn-group">
+                <button onclick="refreshDriveCache()" class="btn btn-primary btn-md mt-1 mb-1">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Refresh Cache
+                </button>
+                <button type="button" class="btn btn-md btn-primary mt-1 mb-1 dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="visually-hidden">Toggle Dropdown</span>
+                </button>
+                <ul class="dropdown-menu record-dropdown">
+                    <li><a class="dropdown-item" href="#" onclick="searchDriveTableRows()">Search</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><h6 class="dropdown-header">Visible Columns</h6></li>
+                    <li class="dropdown-item">
+                        <div class="list-group-item">
+                            <input class="form-check-input col-visible-toggle" data-column-toggle='drivedate' onChange="showTableColumns(this, 'DriveRecord')" type="checkbox" id="chkCol_DriveDate" checked>
+                            <label class="form-check-label stretched-link" for="chkCol_DriveDate">Date</label>
+                        </div>
+                    </li>
+                    <li class="dropdown-item">
+                        <div class="list-group-item">
+                            <input class="form-check-input col-visible-toggle" data-column-toggle='starttime' onChange="showTableColumns(this, 'DriveRecord')" type="checkbox" id="chkCol_StartTime" checked>
+                            <label class="form-check-label stretched-link" for="chkCol_StartTime">Start</label>
+                        </div>
+                    </li>
+                    <li class="dropdown-item">
+                        <div class="list-group-item">
+                            <input class="form-check-input col-visible-toggle" data-column-toggle='avgmpg' onChange="showTableColumns(this, 'DriveRecord')" type="checkbox" id="chkCol_AvgMpg" checked>
+                            <label class="form-check-label stretched-link" for="chkCol_AvgMpg">Avg MPG</label>
+                        </div>
+                    </li>
+                    <li class="dropdown-item">
+                        <div class="list-group-item">
+                            <input class="form-check-input col-visible-toggle" data-column-toggle='duration' onChange="showTableColumns(this, 'DriveRecord')" type="checkbox" id="chkCol_Duration" checked>
+                            <label class="form-check-label stretched-link" for="chkCol_Duration">Duration</label>
+                        </div>
+                    </li>
+                    <li class="dropdown-item">
+                        <div class="list-group-item">
+                            <input class="form-check-input col-visible-toggle" data-column-toggle='distance' onChange="showTableColumns(this, 'DriveRecord')" type="checkbox" id="chkCol_Distance" checked>
+                            <label class="form-check-label stretched-link" for="chkCol_Distance">Distance</label>
+                        </div>
+                    </li>
+                    <li class="dropdown-item">
+                        <div class="list-group-item">
+                            <input class="form-check-input col-visible-toggle" data-column-toggle='avgspeed' onChange="showTableColumns(this, 'DriveRecord')" type="checkbox" id="chkCol_AvgSpeed" checked>
+                            <label class="form-check-label stretched-link" for="chkCol_AvgSpeed">Avg Speed</label>
+                        </div>
+                    </li>
+                    <li class="dropdown-item">
+                        <div class="list-group-item">
+                            <input class="form-check-input col-visible-toggle" data-column-toggle='maxspeed' onChange="showTableColumns(this, 'DriveRecord')" type="checkbox" id="chkCol_MaxSpeed">
+                            <label class="form-check-label stretched-link" for="chkCol_MaxSpeed">Max Speed</label>
+                        </div>
+                    </li>
+                    <li class="dropdown-item">
+                        <div class="list-group-item">
+                            <input class="form-check-input col-visible-toggle" data-column-toggle='avgrpm' onChange="showTableColumns(this, 'DriveRecord')" type="checkbox" id="chkCol_AvgRpm">
+                            <label class="form-check-label stretched-link" for="chkCol_AvgRpm">Avg RPM</label>
+                        </div>
+                    </li>
+                    <li class="dropdown-item">
+                        <div class="list-group-item">
+                            <input class="form-check-input col-visible-toggle" data-column-toggle='fuelused' onChange="showTableColumns(this, 'DriveRecord')" type="checkbox" id="chkCol_FuelUsed" checked>
+                            <label class="form-check-label stretched-link" for="chkCol_FuelUsed">Fuel Used</label>
+                        </div>
+                    </li>
+                    <li class="dropdown-item">
+                        <div class="list-group-item">
+                            <input class="form-check-input col-visible-toggle" data-column-toggle='drivenotes' onChange="showTableColumns(this, 'DriveRecord')" type="checkbox" id="chkCol_DriveNotes">
+                            <label class="form-check-label stretched-link" for="chkCol_DriveNotes">Notes</label>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row vehicleDetailTabContainer flex-grow-1">
+    <div class="col-12">
+        @if (!Model.HasTelemetryData)
+        {
+            <div class="alert alert-info mt-3">
+                <i class="bi bi-info-circle me-2"></i>No telemetry data found. Upload CSV files via the tracker sync API.
+            </div>
+        }
+        else
+        {
+            <table class="table table-hover">
+                <thead class="sticky-top">
+                    <tr class="d-flex">
+                        <th scope="col" class="col-2 flex-grow-1 text-truncate sortable-header" data-column="drivedate" data-sort-key="drivedate" onclick="sortDriveTable(this)">Date <i class="bi bi-chevron-expand sort-icon"></i></th>
+                        <th scope="col" class="col-1 flex-grow-1 flex-shrink-1 text-truncate sortable-header" data-column="starttime" data-sort-key="starttime" onclick="sortDriveTable(this)">Start <i class="bi bi-chevron-expand sort-icon"></i></th>
+                        <th scope="col" class="col-1 flex-grow-1 flex-shrink-1 text-truncate sortable-header" data-column="avgmpg" data-sort-key="avgmpg" onclick="sortDriveTable(this)">Avg MPG <i class="bi bi-chevron-expand sort-icon"></i></th>
+                        <th scope="col" class="col-1 flex-grow-1 flex-shrink-1 text-truncate sortable-header" data-column="duration" data-sort-key="duration" onclick="sortDriveTable(this)">Duration <i class="bi bi-chevron-expand sort-icon"></i></th>
+                        <th scope="col" class="col-1 flex-grow-1 flex-shrink-1 text-truncate sortable-header" data-column="distance" data-sort-key="distance" onclick="sortDriveTable(this)">Distance (mi) <i class="bi bi-chevron-expand sort-icon"></i></th>
+                        <th scope="col" class="col-1 flex-grow-1 flex-shrink-1 text-truncate sortable-header" data-column="avgspeed" data-sort-key="avgspeed" onclick="sortDriveTable(this)">Avg Speed <i class="bi bi-chevron-expand sort-icon"></i></th>
+                        <th scope="col" class="col-1 flex-grow-1 flex-shrink-1 text-truncate sortable-header" data-column="maxspeed" data-sort-key="maxspeed" style="display:none;" onclick="sortDriveTable(this)">Max Speed <i class="bi bi-chevron-expand sort-icon"></i></th>
+                        <th scope="col" class="col-1 flex-grow-1 flex-shrink-1 text-truncate sortable-header" data-column="avgrpm" data-sort-key="avgrpm" style="display:none;" onclick="sortDriveTable(this)">Avg RPM <i class="bi bi-chevron-expand sort-icon"></i></th>
+                        <th scope="col" class="col-1 flex-grow-1 flex-shrink-1 text-truncate sortable-header" data-column="fuelused" data-sort-key="fuelused" onclick="sortDriveTable(this)">Fuel Used <i class="bi bi-chevron-expand sort-icon"></i></th>
+                        <th scope="col" class="col-2 flex-grow-1 flex-shrink-1 text-truncate sortable-header" data-column="drivenotes" data-sort-key="drivenotes" style="display:none;" onclick="sortDriveTable(this)">Notes <i class="bi bi-chevron-expand sort-icon"></i></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var drive in Model.DriveRecords)
+                    {
+                        <tr class="d-flex drive-record-row" style="cursor:pointer;" onclick="showDriveDetail(@drive.Id)" data-search="@drive.Date @drive.Notes @drive.SourceFilename">
+                            <td class="col-2 flex-grow-1 text-truncate" data-column="drivedate" data-sort-value="@drive.StartUnixTime">@drive.Date</td>
+                            <td class="col-1 flex-grow-1 flex-shrink-1 text-truncate" data-column="starttime" data-sort-value="@drive.StartUnixTime">@drive.StartTimeStr</td>
+                            <td class="col-1 flex-grow-1 flex-shrink-1 text-truncate" data-column="avgmpg" data-sort-value="@(drive.AvgMpgRaw?.ToString() ?? "0")">@drive.AvgMpg</td>
+                            <td class="col-1 flex-grow-1 flex-shrink-1 text-truncate" data-column="duration" data-sort-value="@(drive.EndUnixTime - drive.StartUnixTime)">@drive.DurationStr</td>
+                            <td class="col-1 flex-grow-1 flex-shrink-1 text-truncate" data-column="distance" data-sort-value="@drive.DistanceMiles">@drive.DistanceMiles.ToString("F1")</td>
+                            <td class="col-1 flex-grow-1 flex-shrink-1 text-truncate" data-column="avgspeed" data-sort-value="@drive.AvgSpeedMph">@drive.AvgSpeedMph.ToString("F1")</td>
+                            <td class="col-1 flex-grow-1 flex-shrink-1 text-truncate" data-column="maxspeed" data-sort-value="@drive.MaxSpeedMph" style="display:none;">@drive.MaxSpeedMph.ToString("F1")</td>
+                            <td class="col-1 flex-grow-1 flex-shrink-1 text-truncate" data-column="avgrpm" data-sort-value="@drive.AvgRpm" style="display:none;">@drive.AvgRpm.ToString("F0")</td>
+                            <td class="col-1 flex-grow-1 flex-shrink-1 text-truncate" data-column="fuelused" data-sort-value="@(drive.FuelConsumedGallons?.ToString() ?? "0")">@drive.FuelUsed</td>
+                            <td class="col-2 flex-grow-1 flex-shrink-1 text-truncate" data-column="drivenotes" style="display:none;">@drive.Notes</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+</div>
+
+<style>
+    .sortable-header { cursor: pointer; user-select: none; }
+    .sortable-header:hover { background-color: rgba(0,0,0,0.05); }
+    .sort-icon { font-size: 0.7rem; opacity: 0.5; }
+</style>

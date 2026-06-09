@@ -1,0 +1,183 @@
+@model int
+<div class="d-flex vehicleTabPane" style="height:100%;">
+    <input type="hidden" id="chartVehicleId" value="@Model" />
+
+    <!-- Left Panel: Controls -->
+    <div class="d-flex flex-column me-2" style="width:260px; min-width:260px;">
+
+        <!-- Date Range -->
+        <div class="d-flex gap-1 mb-1">
+            <div class="flex-fill">
+                <label class="form-label mb-0 small">Start</label>
+                <input type="date" id="chartStartDate" class="form-control form-control-sm" />
+            </div>
+            <div class="flex-fill">
+                <label class="form-label mb-0 small">End</label>
+                <input type="date" id="chartEndDate" class="form-control form-control-sm" />
+            </div>
+        </div>
+
+        <!-- Source Files -->
+        <div class="mb-1">
+            <div class="d-flex align-items-center gap-2">
+                <small class="text-muted fw-bold">Files</small>
+                <button class="btn btn-sm btn-link p-0" onclick="toggleAllSourceFiles(true)">All</button>
+                <button class="btn btn-sm btn-link p-0" onclick="toggleAllSourceFiles(false)">None</button>
+                <small id="sourceFileCount" class="text-muted ms-auto"></small>
+            </div>
+            <div id="sourceFileContainer" class="d-flex flex-column" style="max-height:150px; overflow-y:auto; border:1px solid #dee2e6; border-radius:4px; padding:4px;">
+                <small class="text-muted">Set a date range to load files</small>
+            </div>
+        </div>
+
+        <!-- Axis Selectors -->
+        <div id="axisRow1" class="d-flex gap-1 mb-1">
+            <div class="flex-fill">
+                <label class="form-label mb-0 small">X Axis</label>
+                <select id="chartXField" class="form-select form-select-sm">
+                    <option value="">Loading...</option>
+                </select>
+            </div>
+            <div class="flex-fill">
+                <label class="form-label mb-0 small">Y Axis</label>
+                <select id="chartYField" class="form-select form-select-sm">
+                    <option value="">Loading...</option>
+                </select>
+            </div>
+        </div>
+        <div id="axisRow2" class="d-flex gap-1 mb-1">
+            <div class="flex-fill">
+                <label class="form-label mb-0 small">X2 Axis</label>
+                <select id="chartX2Field" class="form-select form-select-sm">
+                    <option value="">None</option>
+                </select>
+            </div>
+            <div class="flex-fill">
+                <label class="form-label mb-0 small">Y2 Axis</label>
+                <select id="chartY2Field" class="form-select form-select-sm">
+                    <option value="">None</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Color By -->
+        <div class="mb-1">
+            <label class="form-label mb-0 small">Color By</label>
+            <select id="mapColorField" class="form-select form-select-sm">
+                <option value="">None</option>
+            </select>
+        </div>
+
+        <!-- View Mode + Actions -->
+        <div class="d-flex gap-1 mb-1">
+            <div class="btn-group btn-group-sm flex-fill" role="group">
+                <input type="radio" class="btn-check" name="viewMode" id="viewChart" value="chart" checked>
+                <label class="btn btn-outline-primary" for="viewChart"><i class="bi bi-bar-chart me-1"></i>Chart</label>
+                <input type="radio" class="btn-check" name="viewMode" id="viewMap" value="map">
+                <label class="btn btn-outline-primary" for="viewMap"><i class="bi bi-map me-1"></i>Map</label>
+            </div>
+        </div>
+        <div class="d-flex gap-1 mb-1">
+            <button onclick="plotChart()" class="btn btn-sm btn-primary flex-fill">
+                <i class="bi bi-bar-chart me-1"></i>Plot
+            </button>
+            <button onclick="toggleFilterBuilder()" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-funnel"></i>
+            </button>
+            <span id="chartPointCount" class="badge bg-secondary align-self-center"></span>
+        </div>
+
+        <!-- Saved Filter -->
+        <div class="mb-1">
+            <select id="chartFilterSelect" class="form-select form-select-sm">
+                <option value="">No filter</option>
+            </select>
+        </div>
+
+        <!-- Collapsible Filter Builder -->
+        <div id="filterBuilderCard" class="card mb-1" style="display:none;">
+            <div class="card-body p-2">
+                <div class="d-flex align-items-center mb-1">
+                    <strong class="small">Filter</strong>
+                    <div class="form-check form-check-inline ms-2 mb-0">
+                        <input class="form-check-input" type="radio" name="filterLogic" id="filterLogicAnd" value="And" checked>
+                        <label class="form-check-label small" for="filterLogicAnd">AND</label>
+                    </div>
+                    <div class="form-check form-check-inline mb-0">
+                        <input class="form-check-input" type="radio" name="filterLogic" id="filterLogicOr" value="Or">
+                        <label class="form-check-label small" for="filterLogicOr">OR</label>
+                    </div>
+                </div>
+                <div id="filterRulesContainer"></div>
+                <div class="d-flex gap-1 mt-1">
+                    <button onclick="addFilterRule()" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus"></i></button>
+                    <input type="text" id="filterName" class="form-control form-control-sm" placeholder="Name" />
+                    <button onclick="saveCurrentFilter()" class="btn btn-sm btn-success">Save</button>
+                    <button onclick="deleteSelectedFilter()" class="btn btn-sm btn-danger">Del</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel: Chart / Map + Legend -->
+    <div class="d-flex flex-grow-1 position-relative" style="min-height:500px;">
+        <div id="chartContainer" class="flex-grow-1">
+            <canvas id="scatterChart"></canvas>
+        </div>
+
+        <!-- Axis Config Popup -->
+        <div id="chartAxisConfigPopup" class="card shadow position-absolute" style="display:none; z-index:1050; width:220px;">
+            <div class="card-body p-2">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong id="chartAxisConfigTitle" class="small">Edit: speed</strong>
+                    <button type="button" class="btn-close" style="font-size:0.6rem;" onclick="$('#chartAxisConfigPopup').hide()"></button>
+                </div>
+                <div class="row g-1 mb-2">
+                    <div class="col-6">
+                        <label class="form-label mb-0 small">Min</label>
+                        <input type="number" id="chartAxisMin" class="form-control form-control-sm" step="any">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label mb-0 small">Max</label>
+                        <input type="number" id="chartAxisMax" class="form-control form-control-sm" step="any">
+                    </div>
+                </div>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-primary flex-grow-1" onclick="applyChartAxisConfig()">Apply</button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="resetChartAxisConfig()">Auto</button>
+                </div>
+            </div>
+        </div>
+        <div id="mapContainer" class="flex-grow-1" style="display:none;"></div>
+        <!-- Color Scale Config Popup -->
+        <div id="colorScalePopup" class="card shadow position-absolute" style="display:none; z-index:1050; width:220px;">
+            <div class="card-body p-2">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong id="colorScaleTitle" class="small">Edit: speed</strong>
+                    <button type="button" class="btn-close" style="font-size:0.6rem;" onclick="$('#colorScalePopup').hide()"></button>
+                </div>
+                <div class="row g-1 mb-2">
+                    <div class="col-6">
+                        <label class="form-label mb-0 small">Min</label>
+                        <input type="number" id="colorScaleMin" class="form-control form-control-sm" step="any">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label mb-0 small">Max</label>
+                        <input type="number" id="colorScaleMax" class="form-control form-control-sm" step="any">
+                    </div>
+                </div>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-primary flex-grow-1" onclick="applyColorScale()">Apply</button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="resetColorScale()">Auto</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="colorLegend" class="d-none flex-column align-items-center ms-2" style="width:40px; cursor:pointer;" title="Double-click to edit range">
+            <small id="colorLegendMax" class="text-muted" style="font-size:0.7rem;"></small>
+            <div style="flex-grow:1; width:12px; border-radius:4px; background: linear-gradient(to bottom, rgb(255,0,0), rgb(255,255,0), rgb(0,255,0));"></div>
+            <small id="colorLegendMin" class="text-muted" style="font-size:0.7rem;"></small>
+            <small id="colorLegendLabel" class="text-muted mt-1" style="font-size:0.65rem;"></small>
+        </div>
+    </div>
+</div>

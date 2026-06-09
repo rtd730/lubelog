@@ -12,7 +12,7 @@ using System.Globalization;
 using CarCareTracker.Models.LoggerSync;
 
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args); 
 
 //Additional JsonFile
 builder.Configuration.AddJsonFile(StaticHelper.UserConfigPath, optional: true, reloadOnChange: true);
@@ -93,6 +93,9 @@ else
     builder.Services.AddSingleton<ITelemetryDataAccess, TelemetryDataAccess>();
     builder.Services.AddSingleton<IFirmwareDataAccess, FirmwareDataAccess>();
     builder.Services.AddSingleton<IReceivedFileDataAccess, ReceivedFileDataAccess>();
+    builder.Services.AddSingleton<IDriveRecordDataAccess, DriveRecordDataAccess>();
+    builder.Services.AddSingleton<IFilterDefinitionDataAccess, FilterDefinitionDataAccess>();
+
 
 }
 
@@ -111,6 +114,10 @@ builder.Services.AddSingleton<ILoginLogic, LoginLogic>();
 builder.Services.AddSingleton<IUserLogic, UserLogic>();
 builder.Services.AddSingleton<IOdometerLogic, OdometerLogic>();
 builder.Services.AddSingleton<IVehicleLogic, VehicleLogic>();
+builder.Services.AddSingleton<ITelemetryParserService, TelemetryParserService>();
+builder.Services.AddSingleton<ITelemetryFieldService, TelemetryFieldService>();
+builder.Services.AddSingleton<ITelemetryLatestCacheService, TelemetryLatestCacheService>();
+
 
 //Configure Auth
 builder.Services.AddHttpClient();
@@ -214,4 +221,31 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+// Initialize telemetry latest-record cache
+// Initialize telemetry latest-record cache in the BACKGROUND so a slow warm-up
+// never blocks the web server from starting. The markers below tell us exactly
+// how long the warm-up takes (and whether it's even the slow part).
+Console.WriteLine("[startup] reached web-server start; warming telemetry cache in background...");
+_ = Task.Run(() =>
+{
+    try
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        using (var scope = app.Services.CreateScope())
+        {
+            var cache = scope.ServiceProvider.GetRequiredService<ITelemetryLatestCacheService>();
+            var telemetryData = scope.ServiceProvider.GetRequiredService<ITelemetryDataAccess>();
+            var vehicleData = scope.ServiceProvider.GetRequiredService<IVehicleDataAccess>();
+            var vehicles = vehicleData.GetVehicles();
+            cache.Initialize(telemetryData, vehicles.Select(v => v.Id).ToList());
+        }
+        Console.WriteLine($"[startup] telemetry cache warm-up finished in {sw.Elapsed.TotalSeconds:F1}s");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[startup] telemetry cache warm-up FAILED: {ex.Message}");
+    }
+});
+
 app.Run();
+

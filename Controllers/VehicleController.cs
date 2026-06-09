@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
+using CarCareTracker.Models.LoggerSync;
+
 
 namespace CarCareTracker.Controllers
 {
@@ -41,6 +43,16 @@ namespace CarCareTracker.Controllers
         private readonly IOdometerLogic _odometerLogic;
         private readonly IVehicleLogic _vehicleLogic;
         private readonly IExtraFieldDataAccess _extraFieldDataAccess;
+        private readonly IDriveRecordDataAccess _driveRecordDataAccess;
+        private readonly ITelemetryParserService _telemetryParserService;
+        private readonly ITelemetryFieldService _telemetryFieldService;
+        private readonly ITelemetryLatestCacheService _latestCache;
+        private readonly ITelemetryDataAccess _telemetryDataAccess;
+        private readonly IFilterDefinitionDataAccess _filterDefinitionDataAccess;
+        private readonly IFirmwareDataAccess _firmwareDataAccess;
+        private readonly IReceivedFileDataAccess _receivedFileDataAccess;
+
+
 
         public VehicleController(ILogger<VehicleController> logger,
             IFileHelper fileHelper,
@@ -68,7 +80,17 @@ namespace CarCareTracker.Controllers
             IConfigHelper config,
             IInspectionRecordDataAccess inspectionRecordDataAccess,
             IInspectionRecordTemplateDataAccess inspectionRecordTemplateDataAccess,
-            IEquipmentRecordDataAccess equipmentRecordDataAccess)
+            IEquipmentRecordDataAccess equipmentRecordDataAccess,
+            IDriveRecordDataAccess driveRecordDataAccess,
+            ITelemetryParserService telemetryParserService,
+            ITelemetryFieldService telemetryFieldService,
+            ITelemetryDataAccess telemetryDataAccess,
+            IFilterDefinitionDataAccess filterDefinitionDataAccess,
+            IFirmwareDataAccess firmwareDataAccess,
+            IReceivedFileDataAccess receivedFileDataAccess,
+            ITelemetryLatestCacheService latestCache)
+
+
         {
             _logger = logger;
             _dataAccess = dataAccess;
@@ -96,7 +118,16 @@ namespace CarCareTracker.Controllers
             _odometerLogic = odometerLogic;
             _vehicleLogic = vehicleLogic;
             _webEnv = webEnv;
-            _config = config; 
+            _config = config;
+            _driveRecordDataAccess = driveRecordDataAccess;
+            _telemetryParserService = telemetryParserService;
+            _telemetryFieldService = telemetryFieldService;
+            _telemetryDataAccess = telemetryDataAccess;
+            _filterDefinitionDataAccess = filterDefinitionDataAccess;
+            _firmwareDataAccess = firmwareDataAccess;
+            _receivedFileDataAccess = receivedFileDataAccess;
+            _latestCache = latestCache;
+ 
         }
         private int GetUserID()
         {
