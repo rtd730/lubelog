@@ -14,6 +14,7 @@ namespace CarCareTracker.External.Implementations
         {
             _liteDB = liteDB;
         }
+        
         public bool SaveTelemetryBatch(List<TelemetryRecord> records)
         {
             var db = _liteDB.GetLiteDB();
@@ -77,6 +78,22 @@ namespace CarCareTracker.External.Implementations
                 query = Query.And(query, Query.EQ(nameof(TelemetryRecord.FileType), fileType));
             }
             return table.Find(query).ToList();
+        }
+                // Streams the time range via the UnixTime index and keeps only the distinct
+        // (fileType, filename) pairs — memory scales with the number of FILES (hundreds),
+        // never the number of rows (millions). Replaces materializing the whole range.
+        public List<(string FileType, string SourceFilename)> GetDistinctSourceFiles(int vehicleId, long startUnix, long endUnix)
+        {
+            var db = _liteDB.GetLiteDB();
+            var table = db.GetCollection<TelemetryRecord>(tableName);
+            var seen = new HashSet<(string FileType, string SourceFilename)>();
+            foreach (var r in table.Find(Query.Between(nameof(TelemetryRecord.UnixTime), startUnix, endUnix)))
+            {
+                if (r.VehicleId != vehicleId) continue;
+                if (r.SourceFilename == "sync_check") continue;
+                seen.Add((r.FileType, r.SourceFilename));
+            }
+            return seen.OrderBy(f => f.SourceFilename).ToList();
         }
         public List<string> GetDistinctFieldNames(int vehicleId, string fileType = "")
         {
@@ -160,13 +177,13 @@ namespace CarCareTracker.External.Implementations
 
             int nth = total > maxPoints ? (int)Math.Ceiling((double)total / maxPoints) : 1;
 
-            // Stream through ordered results, keeping every nth record
+            // Walk the UnixTime index across the range — streams rows one at a
+            // time in ascending time order, so memory stays flat no matter how
+            // wide the range is. NEVER use fluent .OrderBy here: it materializes
+            // and sorts the entire collection in RAM (the trap that froze the box).
             var result = new List<TelemetryRecord>(Math.Min(total, maxPoints));
             int i = 0;
-            foreach (var r in table.Query()
-                .OrderBy(x => x.UnixTime)
-                .Where(x => x.UnixTime >= startUnix && x.UnixTime <= endUnix)
-                .ToEnumerable())
+            foreach (var r in table.Find(Query.Between(nameof(TelemetryRecord.UnixTime), startUnix, endUnix)))
             {
                 if (r.VehicleId != vehicleId) continue;
                 if (!string.IsNullOrEmpty(fileType) && r.FileType != fileType) continue;
@@ -177,6 +194,9 @@ namespace CarCareTracker.External.Implementations
                 }
                 i++;
             }
+
+            // Cheap insurance: sort only the downsampled handful, never the raw rows.
+            result.Sort((a, b) => a.UnixTime.CompareTo(b.UnixTime));
 
             return result;
         }

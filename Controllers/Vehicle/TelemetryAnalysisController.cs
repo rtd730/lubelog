@@ -57,12 +57,8 @@ namespace CarCareTracker.Controllers
             {
                 endUnix = new DateTimeOffset(endDt.AddDays(1), TimeSpan.Zero).ToUnixTimeSeconds();
             }
-            var records = _telemetryDataAccess.GetTelemetryByVehicleIdAndTimeRange(vehicleId, startUnix, endUnix);
-            var files = records
-                .Where(r => r.SourceFilename != "sync_check")
-                .Select(r => new { fileType = r.FileType, filename = r.SourceFilename })
-                .Distinct()
-                .OrderBy(f => f.filename)
+            var files = _telemetryDataAccess.GetDistinctSourceFiles(vehicleId, startUnix, endUnix)
+                .Select(f => new { fileType = f.FileType, filename = f.SourceFilename })
                 .ToList();
             return Json(files);
         }
