@@ -24,7 +24,6 @@ namespace CarCareTracker.External.Implementations
             table.EnsureIndex(x => x.SourceFilename);
             table.Upsert(records);
             UpsertLatestRecords(records);
-            db.Checkpoint();
             return true;
         }
 
@@ -114,7 +113,6 @@ namespace CarCareTracker.External.Implementations
                 record.VehicleId = newVehicleId;
             }
             table.Upsert(records);
-            db.Checkpoint();
             return true;
         }
                 public HashSet<string> GetExistingSourceFilenames(int vehicleId)
@@ -134,7 +132,6 @@ namespace CarCareTracker.External.Implementations
             var db = _liteDB.GetLiteDB();
             var table = db.GetCollection<TelemetryRecord>(tableName);
             table.DeleteMany(x => x.VehicleId == vehicleId);
-            db.Checkpoint();
             return true;
         }
         public TelemetryRecord? GetLatestByFileType(int vehicleId, string fileType)

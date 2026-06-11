@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Text.Json;
-using CarCareTracker.Models.LoggerSync;
 
 
 namespace CarCareTracker.Controllers
@@ -50,6 +49,7 @@ namespace CarCareTracker.Controllers
         private readonly IDriveRecordDataAccess _driveRecordDataAccess;
         private readonly ITelemetryParserService _telemetryParserService;
         private readonly ITelemetryLatestCacheService _latestCache;
+        private readonly ITelemetryParseQueue _parseQueue;
 
         public APIController(IVehicleDataAccess dataAccess,
             IGasHelper gasHelper,
@@ -85,7 +85,8 @@ namespace CarCareTracker.Controllers
             IReceivedFileDataAccess receivedFileDataAccess,
             ITelemetryParserService telemetryParserService,
             IDriveRecordDataAccess driveRecordDataAccess,
-            ITelemetryLatestCacheService latestCache)
+            ITelemetryLatestCacheService latestCache,
+            ITelemetryParseQueue parseQueue)
 
         {
             _dataAccess = dataAccess;
@@ -123,6 +124,7 @@ namespace CarCareTracker.Controllers
             _driveRecordDataAccess = driveRecordDataAccess;
             _telemetryParserService = telemetryParserService;
             _latestCache = latestCache;
+            _parseQueue = parseQueue;
 
 
         }

@@ -117,6 +117,8 @@ builder.Services.AddSingleton<IVehicleLogic, VehicleLogic>();
 builder.Services.AddSingleton<ITelemetryParserService, TelemetryParserService>();
 builder.Services.AddSingleton<ITelemetryFieldService, TelemetryFieldService>();
 builder.Services.AddSingleton<ITelemetryLatestCacheService, TelemetryLatestCacheService>();
+builder.Services.AddSingleton<ITelemetryParseQueue, TelemetryParseQueue>();
+builder.Services.AddHostedService<TelemetryParseWorker>();
 
 
 //Configure Auth

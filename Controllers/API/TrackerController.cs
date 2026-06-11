@@ -3,6 +3,7 @@ using CarCareTracker.Filter;
 using CarCareTracker.Models;
 using CarCareTracker.Models.LoggerSync;
 using Microsoft.AspNetCore.Mvc;
+using CarCareTracker.Logic; 
 
 namespace CarCareTracker.Controllers
 {
@@ -70,25 +71,17 @@ namespace CarCareTracker.Controllers
                 
                 // Determine file type from path (e.g., "LOG/2026/file.CSV" → "LOG")
                 var fileType = safeName.Split(Path.DirectorySeparatorChar, '/')[0];
-                
-                // IMU files are archived to disk above but NOT parsed into rows — raw
-                // high-frequency signal kept for on-demand FFT. Matches the manual upload.
+
+                // Accept-then-parse: the bytes are safely on disk and marked received,
+                // so the tracker gets its 200 immediately and moves on. The parse +
+                // drive detection run on the background worker, so a backlog of uploads
+                // can never block the request or blow the tracker's 30s HTTP timeout.
+                // IMU is archived only — never parsed.
                 if (!fileType.Equals("IMU", StringComparison.OrdinalIgnoreCase))
                 {
-                    _telemetryParserService.ParseAndStoreCsvFile(vehicleId, filePath, fileType);
+                    _parseQueue.Enqueue(new ParseJob(vehicleId, filePath, fileType));
                 }
 
-                // Auto-detect drives from newly uploaded LOG files
-                if (fileType.Equals("LOG", StringComparison.OrdinalIgnoreCase))
-                {
-                    var latestDriveTime = _driveRecordDataAccess.GetLatestDriveUnixTimeByVehicleId(vehicleId);
-                    var newDrives = _telemetryParserService.DetectDrives(vehicleId, latestDriveTime);
-                    if (newDrives.Any())
-                    {
-                        _driveRecordDataAccess.SaveDriveRecordBatch(newDrives);
-                    }
-                }
-                
                 return Json(OperationResponse.Succeed("File Saved"));
 
             }
