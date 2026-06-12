@@ -61,115 +61,116 @@
             </div>
         </div>
     </div>
-
-    <!-- Manual Data Upload -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h6 class="card-title"><i class="bi bi-folder-symlink me-1"></i>Manual Data Upload</h6>
-            <p class="small text-muted mb-2">
-                Pick your SD card folder to upload data that didn't sync over WiFi.
-                Files already received are skipped automatically.
-            </p>
-            <div class="row g-2 align-items-end">
-                <div class="col-auto">
-                    <label class="form-label mb-0 small">SD Card Folder</label>
-                    <input type="file" id="csvFolder" class="form-control form-control-sm" multiple webkitdirectory directory />
+    <div class="vehicleDetailTabContainer flex-grow-1">
+        <!-- Manual Data Upload -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-folder-symlink me-1"></i>Manual Data Upload</h6>
+                <p class="small text-muted mb-2">
+                    Pick your SD card folder to upload data that didn't sync over WiFi.
+                    Files already received are skipped automatically.
+                </p>
+                <div class="row g-2 align-items-end">
+                    <div class="col-auto">
+                        <label class="form-label mb-0 small">SD Card Folder</label>
+                        <input type="file" id="csvFolder" class="form-control form-control-sm" multiple webkitdirectory directory />
+                    </div>
+                    <div class="col-auto">
+                        <button onclick="uploadTelemetryFiles()" class="btn btn-sm btn-success" id="csvUploadBtn">
+                            <i class="bi bi-cloud-upload me-1"></i>Upload
+                        </button>
+                    </div>
                 </div>
-                <div class="col-auto">
-                    <button onclick="uploadTelemetryFiles()" class="btn btn-sm btn-success" id="csvUploadBtn">
-                        <i class="bi bi-cloud-upload me-1"></i>Upload
-                    </button>
-                </div>
-            </div>
-            <div id="csvUploadStatus" class="small text-muted mt-2"></div>
-        </div>
-    </div>
-    
-    <!-- Upload Firmware -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h6 class="card-title"><i class="bi bi-upload me-1"></i>Upload New Firmware</h6>
-            <div class="row g-2 align-items-end">
-                <div class="col">
-                    <label class="form-label mb-0 small">Notes</label>
-                    <input type="text" id="fwNotes" class="form-control form-control-sm" placeholder="What changed?" />
-                </div>
-                <div class="col-auto">
-                    <label class="form-label mb-0 small">.bin File</label>
-                    <input type="file" id="fwFile" class="form-control form-control-sm" accept=".bin" />
-                </div>
-                <div class="col-auto">
-                    <button onclick="uploadFirmware()" class="btn btn-sm btn-success" id="fwUploadBtn">
-                        <i class="bi bi-cloud-upload me-1"></i>Upload
-                    </button>
-                </div>
+                <div id="csvUploadStatus" class="small text-muted mt-2"></div>
             </div>
         </div>
+        
+        <!-- Upload Firmware -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-upload me-1"></i>Upload New Firmware</h6>
+                <div class="row g-2 align-items-end">
+                    <div class="col">
+                        <label class="form-label mb-0 small">Notes</label>
+                        <input type="text" id="fwNotes" class="form-control form-control-sm" placeholder="What changed?" />
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label mb-0 small">.bin File</label>
+                        <input type="file" id="fwFile" class="form-control form-control-sm" accept=".bin" />
+                    </div>
+                    <div class="col-auto">
+                        <button onclick="uploadFirmware()" class="btn btn-sm btn-success" id="fwUploadBtn">
+                            <i class="bi bi-cloud-upload me-1"></i>Upload
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Firmware History -->
+        <h6><i class="bi bi-cpu me-1"></i>Firmware History</h6>
+
+        @if (Model.FirmwareHistory.Any())
+        {
+            <div class="table-responsive mb-4">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>Uploaded</th>
+                            <th>Size</th>
+                            <th>Notes</th>
+                            <th>Active</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var fw in Model.FirmwareHistory.OrderByDescending(f => f.UploadedAt))
+                        {
+                            <tr>
+                                <td><span class="badge bg-secondary">@fw.Version</span></td>
+                                <td>@fw.UploadedAt.ToString("g")</td>
+                                <td>@((fw.FileSize / 1024.0).ToString("F0")) KB</td>
+                                <td>@fw.Notes</td>
+                                <td>@(fw.IsActive ? "✓" : "")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info mb-4">No firmware records found.</div>
+        }
+
+        <!-- Recent Files -->
+        <h6><i class="bi bi-file-earmark-arrow-up me-1"></i>Recent Synced Files (@Model.ReceivedFiles.Count)</h6>
+        @if (Model.ReceivedFiles.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Received</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var file in Model.ReceivedFiles)
+                        {
+                            <tr>
+                                <td><code>@file.Filename</code></td>
+                                <td>@file.ReceivedAt.ToString("g")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">No synced files recorded.</div>
+        }
     </div>
-
-    <!-- Firmware History -->
-    <h6><i class="bi bi-cpu me-1"></i>Firmware History</h6>
-
-    @if (Model.FirmwareHistory.Any())
-    {
-        <div class="table-responsive mb-4">
-            <table class="table table-sm table-hover">
-                <thead>
-                    <tr>
-                        <th>Version</th>
-                        <th>Uploaded</th>
-                        <th>Size</th>
-                        <th>Notes</th>
-                        <th>Active</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var fw in Model.FirmwareHistory.OrderByDescending(f => f.UploadedAt))
-                    {
-                        <tr>
-                            <td><span class="badge bg-secondary">@fw.Version</span></td>
-                            <td>@fw.UploadedAt.ToString("g")</td>
-                            <td>@((fw.FileSize / 1024.0).ToString("F0")) KB</td>
-                            <td>@fw.Notes</td>
-                            <td>@(fw.IsActive ? "✓" : "")</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-info mb-4">No firmware records found.</div>
-    }
-
-    <!-- Recent Files -->
-    <h6><i class="bi bi-file-earmark-arrow-up me-1"></i>Recent Synced Files (@Model.ReceivedFiles.Count)</h6>
-    @if (Model.ReceivedFiles.Any())
-    {
-        <div class="table-responsive">
-            <table class="table table-sm table-hover">
-                <thead>
-                    <tr>
-                        <th>Filename</th>
-                        <th>Received</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var file in Model.ReceivedFiles)
-                    {
-                        <tr>
-                            <td><code>@file.Filename</code></td>
-                            <td>@file.ReceivedAt.ToString("g")</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-info">No synced files recorded.</div>
-    }
 </div>
 
